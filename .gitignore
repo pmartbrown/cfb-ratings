@@ -1,0 +1,9 @@
+# Track ONLY the published site (docs/) and the repo README. Everything else (preview/ screenshots,
+# notes, data files, secrets) stays out of the public repo.
+/*
+!/docs/
+!/README.md
+!/.gitignore
+*.png
+!/docs/assets/*.svg
+.DS_Store

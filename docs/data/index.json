@@ -1,0 +1,38 @@
+{
+ "season": 2026,
+ "weeks": [
+  {
+   "week": 4,
+   "updated": "2026-09-27",
+   "mode": "full",
+   "provisional": false
+  },
+  {
+   "week": 5,
+   "updated": "2026-10-04",
+   "mode": "full",
+   "provisional": false
+  },
+  {
+   "week": 6,
+   "updated": "2026-10-11",
+   "mode": "full",
+   "provisional": false
+  },
+  {
+   "week": 7,
+   "updated": "2026-10-18",
+   "mode": "scores-only",
+   "provisional": false
+  },
+  {
+   "week": 8,
+   "updated": "2026-10-25",
+   "mode": "scores-only",
+   "provisional": false
+  }
+ ],
+ "latest": 8,
+ "updated": "2026-10-25",
+ "has_conference": true
+}

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>About the ratings · College Football Ratings 2026</title>
+<meta name="description" content="How the college football ratings are built, in plain English.">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<script src="assets/theme.js"></script>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="titlebar">
+      <a class="brand" href="index.html"><span class="logo">CFB</span><h1>College Football Ratings</h1></a>
+      <button class="iconbtn" id="themeBtn" type="button" aria-label="Toggle light or dark theme"></button>
+    </div>
+    <div class="weekline"><h2>About the ratings</h2><span class="updated" id="upd"></span></div>
+  </header>
+  <nav class="tabs" aria-label="Sections">
+    <a href="index.html#/">Top 30</a>
+    <a href="index.html#/compare">Compare weeks</a>
+    <a href="index.html#/teams">All teams</a>
+    <a class="on" href="about.html">About</a>
+  </nav>
+  <main>
+    <article class="card prose">
+      <h3>What the rating means</h3>
+      <p>Every FBS team gets one number: how many points better (or worse) than an average FBS team it would be on a neutral field. If Team A is rated 20.0 and Team B 13.0, the model sees A as about a 7-point favorite on a neutral field. Ranks simply sort teams by that number.</p>
+      <p>The rating comes from on-field results only. Polls, other published ratings, recruiting rankings and betting lines are <strong>not</strong> inputs. Last season's games carry a small, fading weight in the first few weeks and count for nothing after that.</p>
+
+      <h3>What data it uses</h3>
+      <ul>
+        <li><strong>Final scores</strong> of every game involving an FBS team, adjusted for home field, travel, rest and late-game scoring when a game is already decided.</li>
+        <li><strong>Play-by-play efficiency</strong>: how often each offense gains enough yards to stay on schedule, yards per play, and turnovers, adjusted for the strength of the opponents faced.</li>
+        <li>Head-to-head results between teams that are close in the rankings: when a lower-ranked team beats a team ranked within 10 spots of it, the winner gets a small bump (about one point at most) and the loser a matching drop.</li>
+      </ul>
+      <p class="muted">Data provided by CollegeFootballData.com. Schedules and play-by-play from the sportsdataverse project. This site publishes only the model's output (ranks, ratings, records and movement), not the underlying data.</p>
+
+      <h3>How movement is computed</h3>
+      <p>Movement compares a team's rank this week with its rank in the previous week's published list. A green ▲ means the team moved up that many spots, a red ▼ means it moved down, and a gray dash means no change. Movement uses every FBS team's previous rank, so a team climbing into the Top 30 shows its real move and "was #N". "NEW" appears only for a team that was not rated the week before. The small number under the arrow is the change in rating, in points. The first week shown has no earlier list to compare with.</p>
+
+      <h3>"Full", "Scores-only" and "Provisional"</h3>
+      <ul>
+        <li><strong>Full</strong>: the week's ratings include play-by-play efficiency for that week's games.</li>
+        <li><strong>Scores-only</strong>: play-by-play for that week was not available yet, so that week's games count through their final scores only. Earlier weeks still use their play-by-play. These weeks may shift slightly once play-by-play arrives.</li>
+        <li><strong>Provisional</strong>: the week was built from a backup play-by-play source while the usual source was late. It is replaced when the usual source catches up.</li>
+      </ul>
+
+      <h3>Disclaimer</h3>
+      <p>Model output, not betting advice. Ratings are estimates and carry real uncertainty, especially early in the season.</p>
+
+      <h3>Data</h3>
+      <p>The weekly numbers behind this site are published as plain JSON: <a href="data/index.json">data/index.json</a> lists every week, and each week is at <code>data/week-N.json</code>.</p>
+      <p class="muted" id="upd2"></p>
+    </article>
+  </main>
+  <footer class="foot" id="foot"><span>Model output, not betting advice.</span></footer>
+</div>
+<script src="assets/common.js"></script>
+<script>
+CFB.initTheme();
+CFB.getJSON("data/index.json").then(function(idx){
+  var s="Last updated "+CFB.fmtDate(idx.updated)+" (through week "+idx.latest+", "+idx.season+").";
+  document.getElementById("upd").textContent=s; document.getElementById("upd2").textContent=s; CFB.footer(idx.updated);
+}).catch(function(){ CFB.footer(""); });
+</script>
+</body>
+</html>

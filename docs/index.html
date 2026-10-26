@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>College Football Ratings 2026</title>
+<meta name="description" content="Independent college football power ratings for every FBS team, built from on-field results only.">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<script src="assets/theme.js"></script>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="titlebar">
+      <a class="brand" href="#/"><span class="logo">CFB</span><h1>College Football Ratings</h1></a>
+      <button class="iconbtn" id="themeBtn" type="button" aria-label="Toggle light or dark theme"></button>
+    </div>
+    <div class="weekline" id="weekline"></div>
+    <p class="explain">The rating is how many points better than an average FBS team this team would be on a neutral field, built only from on-field results.</p>
+  </header>
+  <nav class="tabs" id="tabs" aria-label="Sections">
+    <a id="tab-top" href="#/">Top 30</a>
+    <a id="tab-compare" href="#/compare">Compare weeks</a>
+    <a id="tab-teams" href="#/teams">All teams</a>
+    <a id="tab-about" href="about.html">About</a>
+  </nav>
+  <main id="main"><div class="empty">Loading ratings…</div></main>
+  <noscript><div class="err">This page needs JavaScript to show the ratings. The raw weekly data is at <a href="data/index.json">data/index.json</a>.</div></noscript>
+  <footer class="foot" id="foot"></footer>
+</div>
+<script src="assets/common.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

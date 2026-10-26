@@ -22,13 +22,13 @@
   {
    "week": 7,
    "updated": "2026-10-18",
-   "mode": "scores-only",
+   "mode": "full",
    "provisional": false
   },
   {
    "week": 8,
    "updated": "2026-10-25",
-   "mode": "scores-only",
+   "mode": "full",
    "provisional": false
   }
  ],

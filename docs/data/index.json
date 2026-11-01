@@ -30,9 +30,15 @@
    "updated": "2026-10-25",
    "mode": "full",
    "provisional": false
+  },
+  {
+   "week": 9,
+   "updated": "2026-11-01",
+   "mode": "scores-only",
+   "provisional": false
   }
  ],
- "latest": 8,
- "updated": "2026-10-25",
+ "latest": 9,
+ "updated": "2026-11-01",
  "has_conference": true
 }

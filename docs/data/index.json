@@ -40,5 +40,53 @@
  ],
  "latest": 9,
  "updated": "2026-11-01",
- "has_conference": true
+ "has_conference": true,
+ "resume_weeks": [
+  {
+   "week": 1,
+   "updated": "2026-11-01",
+   "method": "resume-current-strength"
+  },
+  {
+   "week": 2,
+   "updated": "2026-11-01",
+   "method": "resume-current-strength"
+  },
+  {
+   "week": 3,
+   "updated": "2026-11-01",
+   "method": "resume-current-strength"
+  },
+  {
+   "week": 4,
+   "updated": "2026-11-01",
+   "method": "resume-current-strength"
+  },
+  {
+   "week": 5,
+   "updated": "2026-11-01",
+   "method": "resume-current-strength"
+  },
+  {
+   "week": 6,
+   "updated": "2026-11-01",
+   "method": "resume-current-strength"
+  },
+  {
+   "week": 7,
+   "updated": "2026-11-01",
+   "method": "resume-current-strength"
+  },
+  {
+   "week": 8,
+   "updated": "2026-11-01",
+   "method": "resume-current-strength"
+  },
+  {
+   "week": 9,
+   "updated": "2026-11-01",
+   "method": "resume-current-strength"
+  }
+ ],
+ "resume_latest": 9
 }

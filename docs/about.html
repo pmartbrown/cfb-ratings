@@ -40,6 +40,17 @@
       </ul>
       <p class="muted">Data provided by CollegeFootballData.com. Schedules and play-by-play from the sportsdataverse project. This site publishes only the model's output (ranks, ratings, records and movement), not the underlying data.</p>
 
+      <h3>Résumé Ranking</h3>
+      <p>The Top 30 page has a second list, the <strong>Résumé Ranking</strong>. The Power Ranking predicts: it says how strong a team is right now. The Résumé Ranking looks back: it asks how hard this team's record would be for a typical top-25 team to match against the same schedule.</p>
+      <ul>
+        <li>For every game a team has played, the model works out the chance that a typical top-25 team (the average of our top 25 by power rating) would have won that same game, at the same place, against the same opponent.</li>
+        <li>Opponents are rated by how good they are <strong>now</strong>, using only games played so far, so an early win is re-priced each week as the opponent's rating settles.</li>
+        <li>Each win adds one minus that chance and each loss subtracts that chance. A win over a weak or FCS team adds about zero, because a top-25 team would have won too. A loss to a weak team costs about one, and a loss as a clear favorite costs a little extra. Added up over the season, the score is the number of wins above what a typical top-25 team would be expected to get.</li>
+        <li>Only wins and losses count. The margin of victory, polls and other rankings are not used. When a team beats an opponent that is ahead of it in score by up to one win, the winner gets a small bump and the loser a matching drop.</li>
+        <li>The <strong>match</strong> figure is the chance a typical top-25 team would win at least as many of those games. It is shown for reading only; the order follows the score.</li>
+      </ul>
+      <p class="muted">An unbeaten team with a soft schedule does not automatically rank first. The Résumé Ranking is published for weeks 1 onward as <code>data/resume-week-N.json</code>.</p>
+
       <h3>How movement is computed</h3>
       <p>Movement compares a team's rank this week with its rank in the previous week's published list. A green ▲ means the team moved up that many spots, a red ▼ means it moved down, and a gray dash means no change. Movement uses every FBS team's previous rank, so a team climbing into the Top 30 shows its real move and "was #N". "NEW" appears only for a team that was not rated the week before. The small number under the arrow is the change in rating, in points. The first week shown has no earlier list to compare with.</p>
 

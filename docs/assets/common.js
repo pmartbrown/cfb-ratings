@@ -12,8 +12,9 @@ var CFB = (function(){
     paintToggle();}
   function fmtDate(iso){if(!iso)return "";var p=iso.split("-");var m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     return m[+p[1]-1]+" "+(+p[2])+", "+p[0];}
+  function fmtShort(iso){var s=fmtDate(iso);return s.slice(0,s.lastIndexOf(","))||s;}
   function footer(updated){var f=document.getElementById("foot");if(!f)return;
     f.innerHTML='<span>Updated '+esc(fmtDate(updated))+'</span><a href="about.html">Methodology</a><span>Model output, not betting advice.</span><span>Data provided by CollegeFootballData.com and sportsdataverse.</span>';}
   function getJSON(url){return fetch(url,{cache:"no-cache"}).then(function(r){if(!r.ok)throw new Error(url+" "+r.status);return r.json();});}
-  return {esc:esc,initTheme:initTheme,fmtDate:fmtDate,footer:footer,getJSON:getJSON};
+  return {esc:esc,initTheme:initTheme,fmtDate:fmtDate,fmtShort:fmtShort,footer:footer,getJSON:getJSON};
 })();

@@ -5,7 +5,7 @@
   var S = { idx:null, weeks:{}, list:[], hasConf:false,
             cmpWeeks:null, cmpAll:false, cmpSort:null, cmpDir:1, cmpQ:"", cmpConf:"",
             topQ:"", topConf:"", allQ:"", allConf:"", allSort:"rank", allDir:1,
-            chartTeams:null };
+            chartTeams:null, rweeks:{}, rlist:[], method:"power" };
   // Chart colors: none is the orange site accent; mid-tone so each reads on navy and on white.
   var PALETTE = ["#2E9BF0","#22B573","#E5484D","#8B6CEF","#C9A227","#D9529A","#13A8A8","#7C8BA1","#6E9F2E","#9C7A5B","#5B6CD6","#A05BC4","#3D7EA6","#C2185B","#558B6E"];
   var main = document.getElementById("main");
@@ -19,18 +19,36 @@
     var h = (location.hash||"").replace(/^#\/?/,""); var q = {};
     var qi = h.indexOf("?"); if(qi>=0){ h.slice(qi+1).split("&").forEach(function(kv){ var p=kv.split("="); if(p[0]) q[decodeURIComponent(p[0])]=decodeURIComponent(p[1]||""); }); h=h.slice(0,qi); }
     var parts = h.split("/").filter(Boolean);
-    var r = { view:"top", week:S.idx.latest, sub:"table", q:q };
+    var r = { view:"top", week:S.idx.latest, sub:"table", q:q, method:"power" };
     if(parts[0]==="week"){ r.view="top"; r.week=+parts[1]; }
     else if(parts[0]==="teams"){ r.view="teams"; if(parts[1]) r.week=+parts[1]; }
     else if(parts[0]==="compare"){ r.view="compare"; r.sub = parts[1]==="chart" ? "chart" : "table"; }
+    // Top 30 method: #/week/N?view=resume (no view = Power, as before)
+    if(r.view==="top" && q.view==="resume" && S.rlist.length){
+      r.method = "resume";
+      if(!parts[1] && q.week) r.week = +q.week;
+      if(!S.rweeks[r.week]) r.week = S.idx.resume_latest || S.rlist[S.rlist.length-1];
+      return r;
+    }
+    if(r.view==="top" && !parts[1] && q.week) r.week = +q.week;
+    if(r.view==="top" && !S.weeks[r.week] && S.rweeks[r.week]){ r.noPower = true; return r; }
     if(!S.weeks[r.week]) r.week = S.idx.latest;
     return r;
   }
-  function weekHref(view, wk){ return view==="teams" ? "#/teams/"+wk : "#/week/"+wk; }
+  function weekHref(view, wk, method){ return view==="teams" ? "#/teams/"+wk : "#/week/"+wk+(method==="resume"?"?view=resume":""); }
 
   // ---------- header / nav ----------
-  function header(wk){
+  function header(wk, method){
     var w = S.weeks[wk]; var el = document.getElementById("weekline");
+    var ex = document.getElementById("explain");
+    if(ex){ if(!ex.getAttribute("data-power")) ex.setAttribute("data-power", ex.innerHTML);
+      ex.innerHTML = method==="resume" ? "The résumé score is how many more wins the team has than a typical top-25 team would be expected to get against the same schedule, from game results only." : ex.getAttribute("data-power"); }
+    if(method==="resume" || !w){
+      var rw = S.rweeks[wk];
+      el.innerHTML = '<h2>Week '+wk+', '+(rw?rw.season:S.idx.season)+'</h2>'+(method==="resume"?'<span class="chip" title="Wins and losses only; no polls, no margin of victory">Results only</span>':'')+
+                     (rw?'<span class="updated">Updated '+esc(CFB.fmtDate(rw.updated))+'</span>':'');
+      return;
+    }
     var mode = w.mode==="full" ? '<span class="chip full" title="Includes play-by-play efficiency">Full</span>'
                                : '<span class="chip scores" title="Final scores only; play-by-play not yet available for this week">Scores-only</span>';
     el.innerHTML = '<h2>Week '+w.week+', '+w.season+'</h2>'+mode+(w.provisional?'<span class="chip prov" title="Built from a backup play-by-play feed; may change">Provisional</span>':'')+
@@ -38,13 +56,30 @@
   }
   function nav(r){
     ["top","compare","teams"].forEach(function(v){ document.getElementById("tab-"+v).classList.toggle("on", r.view===v); });
-    document.getElementById("tab-top").setAttribute("href", "#/week/"+r.week);
-    document.getElementById("tab-teams").setAttribute("href", "#/teams/"+r.week);
+    var pw = S.weeks[r.week] ? r.week : S.idx.latest;
+    document.getElementById("tab-top").setAttribute("href", weekHref("top", r.view==="top"?r.week:pw, S.method));
+    document.getElementById("tab-teams").setAttribute("href", "#/teams/"+pw);
   }
-  function pills(view, wk){
+  function pills(view, wk, method){
+    if(method==="resume") return '<div class="pills" role="tablist" aria-label="Week">'+S.rlist.map(function(n){
+      return '<a class="pill'+(n===wk?' on':'')+'" role="tab" aria-selected="'+(n===wk)+'" href="'+weekHref(view,n,method)+'">Wk '+n+(n===S.rlist[S.rlist.length-1]?'<span class="dot" aria-hidden="true"></span>':'')+'</a>';
+    }).join("")+'</div>';
     return '<div class="pills" role="tablist" aria-label="Week">'+S.list.map(function(n){
       var w=S.weeks[n]; return '<a class="pill'+(n===wk?' on':'')+'" role="tab" aria-selected="'+(n===wk)+'" href="'+weekHref(view,n)+'" title="'+(w.mode==="full"?"Full":"Scores-only")+(w.provisional?", provisional":"")+'">Wk '+n+(n===S.idx.latest?'<span class="dot" aria-hidden="true"></span>':'')+'</a>';
     }).join("")+'</div>';
+  }
+  // Power / Résumé switch above the Top 30 (hidden if no résumé data loaded)
+  function methodToggle(r){
+    if(!S.rlist.length) return "";
+    // keep the selected week; a week with no Power list shows a short message instead
+    var pwk = (S.weeks[r.week] || S.rweeks[r.week]) ? r.week : S.idx.latest;
+    var rwk = S.rweeks[r.week] ? r.week : S.rlist[S.rlist.length-1];
+    function opt(m, href, name, desc){ var on = r.method===m;
+      return '<a class="method'+(on?' on':'')+'" role="tab" aria-selected="'+on+'" href="'+href+'"><span class="mname">'+name+'</span><span class="mdesc">'+desc+'</span></a>'; }
+    return '<div class="methods" role="tablist" aria-label="Ranking method">'+
+      opt("power", weekHref("top",pwk), "Power Ranking", "Predictive: how strong the team is right now.")+
+      opt("resume", weekHref("top",rwk,"resume"), "Résumé Ranking", "How hard the record would be for a typical top-25 team to match. Game results only.")+
+    '</div>';
   }
   function filterBar(id, q, conf, extra){
     var c = '';
@@ -86,15 +121,23 @@
     var dr = t.prev_rating!=null && t.rating!=null ? fmt(t.rating - t.prev_rating) : "–";
     var m = t.prev_rank - t.rank;
     var a = m>0 ? '<div class="arr up" aria-label="up '+m+'">&#9650; '+m+'</div>' : m<0 ? '<div class="arr down" aria-label="down '+(-m)+'">&#9660; '+(-m)+'</div>' : '<div class="arr flat" aria-label="no change">–</div>';
-    if(topOnly && t.prev_rank>30) return a+'<div class="dr" title="Outside the Top 30 last week">was #'+t.prev_rank+' · '+dr+'</div>';
+    if(topOnly && t.prev_rank>30) return a+'<div class="dr" title="Outside the Top 30 last week">was #'+t.prev_rank+' · '+dr+' pts</div>';
     return a+'<div class="dr">'+dr+' pts</div>';
   }
 
   // ---------- Top 30 ----------
   function renderTop(r){
+    if(r.method==="resume") return renderResume(r);
+    if(r.noPower){
+      var first = S.list[0];
+      main.innerHTML = methodToggle(r) + pills("top", r.week) +
+        '<div class="card msg" role="status"><p>The Power Ranking is published from week '+first+' on, so there is no Power list for week '+r.week+'.</p>'+
+        '<p><a href="'+weekHref("top",r.week,"resume")+'">See the week '+r.week+' Résumé Ranking</a> or <a href="'+weekHref("top",S.idx.latest)+'">the latest Power Ranking (week '+S.idx.latest+')</a>.</p></div>';
+      return;
+    }
     var w=S.weeks[r.week];
     var shown = w.teams.filter(function(t){ return t.rank<=30 && match(t,S.topQ,S.topConf); });
-    var html = pills("top", r.week) + filterBar("top", S.topQ, S.topConf) +
+    var html = methodToggle(r) + pills("top", r.week) + filterBar("top", S.topQ, S.topConf) +
       '<div class="card"><ol class="rows" id="topRows">'+ (shown.length? shown.map(function(t){
         return '<li class="row" tabindex="0" data-team="'+esc(t.team)+'">'+
           '<div class="rk">'+t.rank+'</div>'+
@@ -118,6 +161,60 @@
   }
   function caret(id){ var e=document.getElementById(id); return e && document.activeElement===e ? e.selectionStart : null; }
   function restore(id,pos){ if(pos==null) return; var e=document.getElementById(id); if(e){ e.focus(); try{ e.setSelectionRange(pos,pos); }catch(_){} } }
+
+  // ---------- Résumé Top 30 ----------
+  var GAME_RE = /^(vs|@|n) (.+?) \(([^)]+)\) (\d+-\d+) \[([+-]?\d+\.\d+)\]$/;
+  function game(s, won){
+    var m = GAME_RE.exec(s); if(!m) return '<li>'+esc(s)+'</li>';
+    var where = m[1]==="@" ? "at " : "vs ", cr = +m[5];
+    return '<li><span class="opp">'+where+esc(m[2])+(m[1]==="n"?' <span class="muted">(neutral)</span>':'')+'</span> '+
+      '<span class="pr" title="Opponent power rank this week">'+esc(m[3])+'</span> '+
+      '<span class="sc">'+(won?"W":"L")+' '+esc(m[4])+'</span> '+
+      '<span class="cr '+(cr>0?"up":cr<0?"down":"flat")+'" title="Added to the résumé score">'+esc(m[5])+'</span></li>';
+  }
+  function oppName(s){ var m = GAME_RE.exec(s); return m ? m[2] : s; }
+  function pct(p){ return p==null ? "–" : (p>0 && p<0.001 ? "<0.1%" : (p*100).toFixed(1)+"%"); }
+  function resumeMovement(t, w){
+    if(!w.has_prev) return '<div class="arr flat" title="First week of the season series">–</div><div class="dr">first week</div>';
+    if(t.prev_rank==null) return '<div class="arr new">NEW</div><div class="dr">not ranked last wk</div>';
+    var m = t.prev_rank - t.rank;
+    var a = m>0 ? '<div class="arr up" aria-label="up '+m+'">&#9650; '+m+'</div>' : m<0 ? '<div class="arr down" aria-label="down '+(-m)+'">&#9660; '+(-m)+'</div>' : '<div class="arr flat" aria-label="no change">–</div>';
+    return a+'<div class="dr" title="Rank in last week\'s Résumé Ranking">was #'+t.prev_rank+'</div>';
+  }
+  function renderResume(r){
+    var w=S.rweeks[r.week], pw=S.weeks[r.week];
+    var shown = w.teams.filter(function(t){ return match(t,S.topQ,S.topConf); });
+    var html = methodToggle(r) + pills("top", r.week, "resume") + filterBar("top", S.topQ, S.topConf) +
+      '<div class="card"><ol class="rows" id="topRows">'+ (shown.length? shown.map(function(t){
+        var p = pw && pw.byTeam[t.team];
+        var kw = t.key_wins.map(oppName), kl = t.key_losses.map(oppName);
+        var keys = (kw.length?'Best wins: '+esc(kw.join(", ")):'No wins over rated teams yet')+' · '+(kl.length?'Losses: '+esc(kl.join(", ")):'No losses');
+        return '<li class="row rs" tabindex="0" aria-expanded="false" data-team="'+esc(t.team)+'">'+
+          '<div class="rk">'+t.rank+'</div>'+
+          '<div class="badge" title="Résumé score">'+Number(t.score).toFixed(2)+'</div>'+
+          '<div class="tm"><div class="name">'+esc(t.team)+'</div><div class="sub">'+esc(t.record)+(t.conference?' · '+esc(t.conference):'')+(p?' · <span class="nw">Power #'+p.rank+'</span>':'')+'</div>'+
+            '<div class="keys">'+keys+'</div></div>'+
+          '<div class="mcell" title="Chance a typical top-25 team would match this record on this schedule"><div class="mp">'+pct(t.match_prob)+'</div><div class="dr">match</div></div>'+
+          '<div class="mv">'+resumeMovement(t,w)+'</div>'+
+          '<div class="rdetail"><p class="mline"><b>'+pct(t.match_prob)+'</b> chance a typical top-25 team would match this record on this schedule.</p>'+
+            '<div class="gcol"><h4>Key wins</h4>'+(t.key_wins.length?'<ul>'+t.key_wins.map(function(g){return game(g,true);}).join("")+'</ul>':'<p>None yet.</p>')+'</div>'+
+            '<div class="gcol"><h4>Key losses</h4>'+(t.key_losses.length?'<ul>'+t.key_losses.map(function(g){return game(g,false);}).join("")+'</ul>':'<p>None.</p>')+'</div></div>'+
+          '<span class="chev" aria-hidden="true">&#8250;</span>'+
+        '</li>';
+      }).join("") : '<li class="empty">No teams match.</li>')+'</ol></div>'+
+      '<p class="note"><b>Score</b> = wins above what a typical top-25 team would be expected to win on the same schedule; only wins and losses count, not the margin. '+
+      '<b>Match</b> = the chance a typical top-25 team would win at least as many of these games; lower is harder. '+
+      'Tap or click a row for the key games: P# is the opponent\'s power rank this week (margin and efficiency only, so it can differ a little from the Power Ranking list), and the last number is what that result added to the score. '+
+      'Movement compares with the previous week\'s Résumé list.</p>';
+    main.innerHTML = html;
+    document.getElementById("topCount").textContent = shown.length+" of 30";
+    bindFilter("top", function(v){S.topQ=v;}, function(v){S.topConf=v;}, function(){ var pos=caret("topQ"); renderResume(r); restore("topQ",pos); });
+    Array.prototype.forEach.call(document.querySelectorAll("#topRows .row"), function(li){
+      var tog=function(){ var o=li.classList.toggle("open"); li.setAttribute("aria-expanded", o); };
+      li.addEventListener("click", tog);
+      li.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); tog(); } });
+    });
+  }
 
   // ---------- All teams ----------
   function renderTeams(r){
@@ -268,18 +365,40 @@
   // ---------- main ----------
   function render(){
     var r = parseHash();
+    if(r.view==="top") S.method = r.method;
     nav(r);
-    header(r.view==="compare" ? S.idx.latest : r.week);
+    header(r.view==="compare" ? S.idx.latest : r.week, r.view==="top" ? r.method : "power");
     if(r.view==="teams") renderTeams(r); else if(r.view==="compare") renderCompare(r); else renderTop(r);
     CFB.footer(S.idx.updated);
   }
+  function weekNote(){
+    var el = document.getElementById("weeknote"); if(!el) return;
+    var w = S.weeks[S.idx.latest]; if(!w) return;
+    var how = w.mode==="full" ? "includes play-by-play" : "scores-only week";
+    el.innerHTML = '<strong>Week '+w.week+' ratings, updated '+esc(CFB.fmtShort(w.updated))+'</strong> ('+how+(w.provisional?', provisional':'')+').'+
+      (S.rlist.length ? ' The Résumé Ranking uses game results only, no polls.' : '');
+  }
+  // ?view=resume&week=9 (real query string) -> the site's hash route #/week/9?view=resume
+  (function(){
+    var s = location.search; if(!s || location.hash) return;
+    var q = {}; s.slice(1).split("&").forEach(function(kv){ var p=kv.split("="); if(p[0]) q[decodeURIComponent(p[0])]=decodeURIComponent(p[1]||""); });
+    if(!q.view && !q.week) return;
+    var h = q.week ? "#/week/"+(+q.week) : "#/"; if(q.view==="resume") h += "?view=resume";
+    history.replaceState(null, "", location.pathname + h);
+  })();
   CFB.initTheme();
   CFB.getJSON("data/index.json").then(function(idx){
     S.idx = idx; S.hasConf = !!idx.has_conference;
     S.list = idx.weeks.map(function(w){return w.week;}).sort(function(a,b){return a-b;});
-    return Promise.all(S.list.map(function(n){ return CFB.getJSON("data/week-"+n+".json"); }));
+    // Résumé weeks are optional: if they fail to load, the Power views work as before.
+    var rl = (idx.resume_weeks||[]).map(function(w){return w.week;}).sort(function(a,b){return a-b;});
+    var res = Promise.all(rl.map(function(n){ return CFB.getJSON("data/resume-week-"+n+".json"); })).then(function(rd){
+      rd.forEach(function(d){ S.rweeks[d.week]=d; }); S.rlist = rl;
+    }).catch(function(e){ S.rweeks={}; S.rlist=[]; if(window.console) console.warn(e); });
+    return Promise.all(S.list.map(function(n){ return CFB.getJSON("data/week-"+n+".json"); }).concat([res]));
   }).then(function(docs){
-    docs.forEach(function(d){ d.byTeam={}; d.teams.forEach(function(t){ d.byTeam[t.team]=t; }); S.weeks[d.week]=d; });
+    docs.slice(0, S.list.length).forEach(function(d){ d.byTeam={}; d.teams.forEach(function(t){ d.byTeam[t.team]=t; }); S.weeks[d.week]=d; });
+    weekNote();
     window.addEventListener("hashchange", render);
     render();
   }).catch(function(e){

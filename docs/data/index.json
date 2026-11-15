@@ -42,10 +42,16 @@
    "updated": "2026-11-08",
    "mode": "scores-only",
    "provisional": false
+  },
+  {
+   "week": 11,
+   "updated": "2026-11-15",
+   "mode": "full",
+   "provisional": false
   }
  ],
- "latest": 10,
- "updated": "2026-11-08",
+ "latest": 11,
+ "updated": "2026-11-15",
  "has_conference": true,
  "resume_weeks": [
   {
@@ -97,7 +103,12 @@
    "week": 10,
    "updated": "2026-11-08",
    "method": "resume-current-strength"
+  },
+  {
+   "week": 11,
+   "updated": "2026-11-15",
+   "method": "resume-current-strength"
   }
  ],
- "resume_latest": 10
+ "resume_latest": 11
 }
